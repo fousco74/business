@@ -1,0 +1,200 @@
+{%- macro add_header(page_num, max_pages, doc, letter_head, no_letterhead, footer, print_settings=None) -%}
+    {% if letter_head and not no_letterhead %}<div class="letter-head">{{ letter_head }}</div>{% endif %}
+    {%- if doc.meta.is_submittable and doc.docstatus == 2 -%}
+        <div class="text-center" document-status="cancelled"><h4 style="margin:0;color:#032A5F;">{{ _("ANNULÉE") }}</h4></div>
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- macro fmt(v, c) -%}{%- set f = "{:,.2f}".format(v or 0).replace(",", " ").replace(".", ",") -%}{{ f }} {{ "CFA" if c == "XOF" else (c or "") }}{%- endmacro -%}
+
+{% set co = frappe.get_cached_doc("Company", doc.company) %}
+{% set logo = co.company_logo or frappe.db.get_value("Website Settings", None, "app_logo") %}
+{% set rccm = co.get("custom_rccm") or "" %}
+{% set bank = co.get("custom_bank_account_display") or "" %}
+{% set addr_line = co.get("custom_address_line") or "" %}
+{% set capital = co.get("custom_capital_social") or "1.000.000 F CFA" %}
+{% set sup_addr = frappe.db.get_value("Address", doc.supplier_address, ["address_line1","city","country","phone","email_id"], as_dict=True) if doc.supplier_address else None %}
+{% set has_discount = namespace(v=false) %}
+{% set has_tva = namespace(v=false) %}
+{% set vat_rate = (doc.taxes[0].rate if doc.taxes and doc.taxes|length > 0 else 0) %}
+{% set po_numbers = [] %}
+{% for item in doc.items %}
+  {% if item.discount_percentage and item.discount_percentage > 0 %}{% set has_discount.v = true %}{% endif %}
+  {% if vat_rate and vat_rate > 0 %}{% set has_tva.v = true %}{% endif %}
+  {% if item.purchase_order and item.purchase_order not in po_numbers %}{% set _ = po_numbers.append(item.purchase_order) %}{% endif %}
+{% endfor %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+:root{--p:#032A5F;--a:#0756C5}
+@page{size:A4;}
+.print-format{padding:0 10px 10px!important; margin: 5px !important;font-size:10.5px;line-height:1.25;font-family:'Montserrat',Arial,sans-serif;color:var(--p)}
+.ts{font-weight:700;color:var(--p)} .sm{font-size:9.5px} h2.ts{margin:0!important;font-size:13px;text-transform:uppercase}
+table{width:100%;border-collapse:collapse} .tb{border:1.5px solid var(--a)}
+.tb>thead>tr>th,.tb>tbody>tr>td{vertical-align:top;padding:3px 5px;line-height:1.2;color:var(--p)}
+.tb>thead>tr>th{background:var(--a);color:#fff;font-weight:600}
+.box{border:1.5px solid var(--a);padding:5px 7px;border-radius:5px;background:#f8fbff}
+.alt{background:#f8fbff}
+.footer{position:fixed;bottom:0;left:0;right:0;color:var(--p);font-size:9px;border-top:1px solid var(--p);padding:5px 8mm 3px;text-align:center;line-height:1.35;background:#fff}
+.badge-paid{display:inline-block;padding:2px 8px;background:#16a34a;color:#fff;border-radius:4px;font-size:9px;font-weight:700;margin-left:8px}
+.badge-due{display:inline-block;padding:2px 8px;background:#dc2626;color:#fff;border-radius:4px;font-size:9px;font-weight:700;margin-left:8px}
+.sched th{background:#e8f0fb;color:var(--p);font-size:9px} .sched td{font-size:9px;padding:2px 4px!important}
+.mb4{margin-bottom:4px} .mb10{margin-bottom:10px}
+</style>
+
+{% for page in layout %}
+<div class="page-break"><div class="print-format">
+
+<div class="row text-center mb4">
+  <h2 class="ts">{{ _("FACTURE D'ACHAT") }}
+    {% if doc.is_return %}<span style="color:#dc2626;font-size:11px;"> — AVOIR</span>{% endif %}
+    {% if doc.outstanding_amount == 0 and doc.docstatus == 1 %}<span class="badge-paid">PAYÉE</span>
+    {% elif doc.docstatus == 1 %}<span class="badge-due">EN ATTENTE</span>{% endif %}
+  </h2>
+</div>
+
+<div class="row mb4">
+  <div class="col-xs-6">{% if logo %}<img src="{{ logo }}" style="max-width:160px;max-height:80px;">{% endif %}</div>
+</div>
+
+<div class="row mb10">
+  <div class="col-xs-8">
+    <div><span class="ts">Fournisseur :</span> {{ doc.supplier_name or doc.supplier }}</div>
+    <div><span class="ts">Date :</span> {{ frappe.utils.format_date(doc.posting_date) }}</div>
+    {% if doc.due_date %}<div><span class="ts">Échéance :</span> {{ frappe.utils.format_date(doc.due_date) }}</div>{% endif %}
+    {% if doc.bill_no %}<div><span class="ts">Réf. fournisseur :</span> {{ doc.bill_no }}</div>{% endif %}
+    {% if po_numbers %}<div><span class="ts">Bon{{ "s" if po_numbers|length > 1 else "" }} de commande :</span> {{ po_numbers|join(", ") }}</div>{% endif %}
+    <div class="sm"><span class="ts">Imprimé le :</span> {{ frappe.utils.format_datetime(frappe.utils.now_datetime(), "dd-MM-yyyy HH:mm") }}</div>
+  </div>
+  <div class="col-xs-4">
+    <div class="mb4"><span class="ts">N° facture :</span> {{ doc.name }}</div>
+    <div class="mb4"><span class="ts">Devise :</span> {{ "Franc CFA (XOF)" if doc.currency=="XOF" else (doc.currency or "") }}</div>
+    <div><span class="ts">Solde dû :</span>
+      {% if doc.outstanding_amount == 0 and doc.docstatus == 1 %}<span style="color:#16a34a;font-weight:700;">Soldée</span>
+      {% else %}<span class="ts" style="color:#dc2626;">{{ fmt(doc.outstanding_amount, doc.currency) }}</span>{% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="row mb10">
+  <div class="col-xs-6">
+    <div class="box">
+      <div class="ts mb4">Destinataire (Acheteur) :</div>
+      <div class="sm"><b>{{ co.company_name }}</b></div>
+      {% if addr_line %}<div class="sm">{{ addr_line }}</div>{% endif %}
+      {% if co.tax_id %}<div class="sm"><b>NCC :</b> {{ co.tax_id }}</div>{% endif %}
+      {% if rccm %}<div class="sm"><b>RCCM :</b> {{ rccm }}</div>{% endif %}
+    </div>
+  </div>
+  <div class="col-xs-6">
+    <div class="box">
+      <div class="ts mb4">Fournisseur (Émetteur) :</div>
+      <div class="sm"><b>{{ doc.supplier_name or doc.supplier }}</b></div>
+      {% if sup_addr %}
+        {% if sup_addr.address_line1 %}<div class="sm">{{ sup_addr.address_line1 }}</div>{% endif %}
+        {% if sup_addr.city %}<div class="sm">{{ sup_addr.city }}{% if sup_addr.country %}, {{ sup_addr.country }}{% endif %}</div>{% endif %}
+        {% if sup_addr.phone %}<div class="sm"><b>Tél :</b> {{ sup_addr.phone }}</div>{% endif %}
+        {% if sup_addr.email_id %}<div class="sm"><b>Email :</b> {{ sup_addr.email_id }}</div>{% endif %}
+      {% endif %}
+      {% set s_ncc = frappe.db.get_value('Supplier', doc.supplier, 'tax_id') %}
+      {% if s_ncc %}<div class="sm"><b>NCC :</b> {{ s_ncc }}</div>{% endif %}
+    </div>
+  </div>
+</div>
+
+<table class="table tb table-condensed" style="font-size:10px;">
+  <colgroup>
+    <col style="width:4%"><col style="width:12%"><col style="width:{% if has_discount.v %}24%{% else %}32%{% endif %}">
+    {% if has_discount.v %}<col style="width:7%"><col style="width:8%">{% endif %}
+    <col style="width:7%"><col style="width:6%">{% if has_tva.v %}<col style="width:6%">{% endif %}
+    <col style="width:12%"><col style="width:12%">
+  </colgroup>
+  <thead><tr>
+    <th class="text-center">N°</th><th class="text-center">Code</th><th>Désignation</th>
+    {% if has_discount.v %}<th class="text-center">Remise %</th><th class="text-right">Mnt remise</th>{% endif %}
+    <th class="text-center">Qté</th><th class="text-center">UdM</th>
+    {% if has_tva.v %}<th class="text-center">TVA</th>{% endif %}
+    <th class="text-right">P.U. HT</th><th class="text-right">Total HT</th>
+  </tr></thead>
+  <tbody>
+  {% for item in doc.items %}
+  <tr class="{% if loop.index%2==0 %}alt{% endif %}">
+    <td class="text-center">{{ loop.index }}</td>
+    <td class="text-center ts sm">{{ item.item_code }}</td>
+    <td><div class="ts">{{ item.item_name }}</div>{% if item.description and item.description!=item.item_name %}<div class="sm">{{ item.description }}</div>{% endif %}</td>
+    {% if has_discount.v %}
+    <td class="text-center sm">{% if item.discount_percentage and item.discount_percentage>0 %}{{ item.discount_percentage|round(2) }}%{% else %}—{% endif %}</td>
+    <td class="text-right sm" style="color:#dc2626;">{% if item.discount_amount and item.discount_amount>0 %}-{{ fmt(item.discount_amount, doc.currency) }}{% else %}—{% endif %}</td>
+    {% endif %}
+    <td class="text-center">{{ item.qty|int }}</td>
+    <td class="text-center sm">{{ item.uom }}</td>
+    {% if has_tva.v %}<td class="text-center sm">{{ vat_rate|int if vat_rate else "—" }}%</td>{% endif %}
+    <td class="text-right">{{ fmt(item.rate, doc.currency) }}</td>
+    <td class="text-right ts">{{ fmt(item.amount, doc.currency) }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+<div class="row" style="margin-top:5px;">
+  <div class="col-xs-5 col-xs-offset-7">
+    <div class="row" style="padding:3px 0;border-bottom:1px solid var(--a);">
+      <div class="col-xs-6">Total HT</div><div class="col-xs-6 text-right">{{ fmt(doc.total, doc.currency) }}</div>
+    </div>
+    {% if doc.discount_amount and doc.discount_amount > 0 %}
+    <div class="row" style="padding:2px 0;border-bottom:1px solid var(--a);">
+      <div class="col-xs-6 sm">Remise</div><div class="col-xs-6 text-right sm" style="color:#dc2626;">-{{ fmt(doc.discount_amount, doc.currency) }}</div>
+    </div>
+    {% endif %}
+    {% for tax in (doc.taxes or []) %}{% if tax.tax_amount %}
+    <div class="row" style="padding:2px 0;border-bottom:1px solid #d0e0f0;">
+      <div class="col-xs-7 sm">{{ tax.description or tax.account_head }}</div>
+      <div class="col-xs-5 text-right sm">{{ fmt(tax.tax_amount, doc.currency) }}</div>
+    </div>
+    {% endif %}{% endfor %}
+    <div class="row" style="padding:4px 0;background:var(--a);color:#fff;border-radius:4px;margin-top:3px;">
+      <div class="col-xs-6"><span class="ts" style="color:#fff;">Total TTC</span></div>
+      <div class="col-xs-6 text-right ts" style="color:#fff;">{{ fmt(doc.grand_total, doc.currency) }}</div>
+    </div>
+    {% if doc.outstanding_amount and doc.outstanding_amount > 0 %}
+    <div class="row" style="padding:3px 0;margin-top:3px;background:#fff3cd;border:1px solid #ffc107;border-radius:4px;">
+      <div class="col-xs-6 ts">Solde à payer</div>
+      <div class="col-xs-6 text-right ts" style="color:#dc2626;">{{ fmt(doc.outstanding_amount, doc.currency) }}</div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="sm" style="font-style:italic;margin-top:4px;">
+  Arrêté à : <b>{{ doc.grand_total|int }} {{ "franc(s) CFA" if doc.currency=="XOF" else doc.currency }}</b>
+</div>
+
+{% if doc.payment_schedule and doc.payment_schedule|length >= 1 %}
+<div style="margin-top:6px;">
+  <div class="ts sm mb4">Échéancier :</div>
+  <table class="table tb sched">
+    <thead><tr><th>Terme</th><th class="text-center">Échéance</th><th class="text-center">Part %</th><th class="text-right">Montant</th></tr></thead>
+    <tbody>
+    {% for ps in doc.payment_schedule %}
+    <tr class="{% if loop.index%2==0 %}alt{% endif %}">
+      <td>{{ ps.payment_term or "—" }}</td>
+      <td class="text-center">{{ frappe.utils.format_date(ps.due_date) if ps.due_date else "—" }}</td>
+      <td class="text-center">{{ "%.2f"|format(ps.invoice_portion or 0) }}%</td>
+      <td class="text-right ts">{{ fmt(ps.payment_amount, doc.currency) }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if doc.terms %}<div style="font-size:8.5px;border-top:1px solid var(--a);padding-top:3px;margin-top:5px;"><b>Termes :</b> {{ doc.terms }}</div>{% endif %}
+
+<div class="footer">
+  <div><b>S.A.R.L au capital de {{ capital }}</b>{% if addr_line %} — {{ addr_line }}{% endif %}</div>
+  <div>{% if co.phone_no %}Tél : {{ co.phone_no }}{% endif %}{% if rccm %} &nbsp;|&nbsp; <b>RCCM :</b> {{ rccm }}{% endif %}{% if bank %} &nbsp;|&nbsp; {{ bank }}{% endif %}</div>
+  {% if co.website %}<div>{{ co.website }}</div>{% endif %}
+</div>
+
+</div></div>
+{% endfor %}

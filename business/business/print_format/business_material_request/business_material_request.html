@@ -1,0 +1,120 @@
+{%- macro add_header(page_num, max_pages, doc, letter_head, no_letterhead, footer, print_settings=None) -%}
+    {% if letter_head and not no_letterhead %}<div class="letter-head">{{ letter_head }}</div>{% endif %}
+{%- endmacro -%}
+
+{%- macro fmt(v, c) -%}{%- set f = "{:,.2f}".format(v or 0).replace(",", " ").replace(".", ",") -%}{{ f }} {{ "CFA" if c == "XOF" else (c or "") }}{%- endmacro -%}
+
+{% set co = frappe.get_cached_doc("Company", doc.company) %}
+{% set logo = co.company_logo or frappe.db.get_value("Website Settings", None, "app_logo") %}
+{% set rccm = co.get("custom_rccm") or "" %}
+{% set bank = co.get("custom_bank_account_display") or "" %}
+{% set addr_line = co.get("custom_address_line") or "" %}
+{% set capital = co.get("custom_capital_social") or "1.000.000 F CFA" %}
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+:root{--p:#032A5F;--a:#0756C5}
+@page{size:A4;margin:8mm 8mm 50mm 8mm}
+.print-format{padding:0 10px 10px!important; margin: 5px !important;font-size:10.5px;line-height:1.25;font-family:'Montserrat',Arial,sans-serif;color:var(--p)}
+.ts{font-weight:700;color:var(--p)} .sm{font-size:9.5px} h2.ts{margin:0!important;font-size:13px;text-transform:uppercase}
+table{width:100%;border-collapse:collapse} .tb{border:1.5px solid var(--a)}
+.tb>thead>tr>th,.tb>tbody>tr>td{vertical-align:top;padding:3px 5px;line-height:1.2;color:var(--p)}
+.tb>thead>tr>th{background:var(--a);color:#fff;font-weight:600}
+.box{border:1.5px solid var(--a);padding:5px 7px;border-radius:5px;background:#f8fbff}
+.alt{background:#f8fbff}
+.badge-urgent{display:inline-block;padding:2px 8px;background:#dc2626;color:#fff;border-radius:4px;font-size:9px;font-weight:700;margin-left:8px}
+.footer{position:fixed;bottom:0;left:0;right:0;color:var(--p);font-size:9px;border-top:1px solid var(--p);padding:5px 8mm 3px;text-align:center;line-height:1.35;background:#fff}
+.sig{margin-top:20px;display:flex;justify-content:space-between}
+.sig-box{width:30%;border-top:1px solid var(--p);padding-top:4px;text-align:center;font-size:9px}
+.mb4{margin-bottom:4px} .mb10{margin-bottom:10px}
+</style>
+
+{% for page in layout %}
+<div class="page-break"><div class="print-format">
+
+<div class="row text-center mb4">
+  <h2 class="ts">{{ _("DEMANDE D'APPROVISIONNEMENT") }}
+    {% if doc.get("custom_priorite") in ["Haute", "Urgente"] %}<span class="badge-urgent">{{ doc.custom_priorite|upper }}</span>{% endif %}
+  </h2>
+</div>
+
+<div class="row mb4">
+  <div class="col-xs-6">{% if logo %}<img src="{{ logo }}" style="max-width:160px;max-height:80px;">{% endif %}</div>
+</div>
+
+<div class="row mb10">
+  <div class="col-xs-8">
+    <div><span class="ts">Demandeur :</span> {{ frappe.db.get_value("User", doc.owner, "full_name") or doc.owner }}</div>
+    <div><span class="ts">Date :</span> {{ frappe.utils.format_date(doc.transaction_date) }}</div>
+    {% if doc.schedule_date %}<div><span class="ts">Date souhaitée :</span> {{ frappe.utils.format_date(doc.schedule_date) }}</div>{% endif %}
+    {% if doc.material_request_type %}<div><span class="ts">Type :</span> {{ doc.material_request_type }}</div>{% endif %}
+    <div class="sm"><span class="ts">Imprimé le :</span> {{ frappe.utils.format_datetime(frappe.utils.now_datetime(), "dd-MM-yyyy HH:mm") }}</div>
+  </div>
+  <div class="col-xs-4">
+    <div class="mb4"><span class="ts">N° demande :</span> {{ doc.name }}</div>
+    <div class="mb4"><span class="ts">Statut :</span> {{ doc.status or "Brouillon" }}</div>
+    {% if doc.set_warehouse %}<div><span class="ts">Entrepôt :</span> {{ doc.set_warehouse }}</div>{% endif %}
+  </div>
+</div>
+
+<div class="row mb10">
+  <div class="col-xs-12">
+    <div class="box">
+      <div class="ts mb4">Société demanderesse :</div>
+      <div class="sm"><b>{{ co.company_name }}</b>{% if addr_line %} — {{ addr_line }}{% endif %}</div>
+      {% if co.tax_id %}<div class="sm"><b>NCC :</b> {{ co.tax_id }}</div>{% endif %}
+      {% if rccm %}<div class="sm"><b>RCCM :</b> {{ rccm }}</div>{% endif %}
+    </div>
+  </div>
+</div>
+
+<table class="table tb table-condensed" style="font-size:10px;">
+  <colgroup><col style="width:4%"><col style="width:14%"><col style="width:32%"><col style="width:10%"><col style="width:8%"><col style="width:14%"><col style="width:18%"></colgroup>
+  <thead><tr>
+    <th class="text-center">N°</th><th class="text-center">Code</th><th>Désignation</th>
+    <th class="text-center">Qté requise</th><th class="text-center">UdM</th>
+    <th class="text-center">Date besoin</th><th>Entrepôt destination</th>
+  </tr></thead>
+  <tbody>
+  {% for item in doc.items %}
+  <tr class="{% if loop.index%2==0 %}alt{% endif %}">
+    <td class="text-center">{{ loop.index }}</td>
+    <td class="text-center ts sm">{{ item.item_code }}</td>
+    <td>
+      <div class="ts">{{ item.item_name }}</div>
+      {% if item.description and item.description!=item.item_name %}<div class="sm">{{ item.description }}</div>{% endif %}
+    </td>
+    <td class="text-center ts">{{ item.qty|int }}</td>
+    <td class="text-center sm">{{ item.uom }}</td>
+    <td class="text-center sm">{{ frappe.utils.format_date(item.schedule_date) if item.schedule_date else "—" }}</td>
+    <td class="sm">{{ item.warehouse or "—" }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if doc.get("custom_observation") and doc.custom_observation|trim != "" %}
+<div style="margin-top:8px;font-size:9.5px;">
+  <b>Motif :</b>
+  <div style="white-space:pre-line;word-break:break-word;margin-top:2px;padding:5px 7px;border:1px solid #d0e0f0;border-radius:4px;">{{ doc.custom_observation }}</div>
+</div>
+{% endif %}
+
+{% if doc.terms and doc.terms|trim != "" %}
+<div style="font-size:8.5px;border-top:1px solid var(--a);padding-top:3px;margin-top:8px;"><b>Conditions :</b> {{ doc.terms }}</div>
+{% endif %}
+
+<div class="sig">
+  <div class="sig-box">Demandeur<br>{{ frappe.db.get_value("User", doc.owner, "full_name") or doc.owner }}</div>
+  <div class="sig-box">Responsable achats<br>{{ co.company_name }}</div>
+  <div class="sig-box">Approbation direction</div>
+</div>
+
+<div class="footer">
+  <div><b>S.A.R.L au capital de {{ capital }}</b>{% if addr_line %} — {{ addr_line }}{% endif %}</div>
+  <div>{% if co.phone_no %}Tél : {{ co.phone_no }}{% endif %}{% if rccm %} &nbsp;|&nbsp; <b>RCCM :</b> {{ rccm }}{% endif %}{% if bank %} &nbsp;|&nbsp; {{ bank }}{% endif %}</div>
+  {% if co.website %}<div>{{ co.website }}</div>{% endif %}
+</div>
+
+</div></div>
+{% endfor %}

@@ -1,0 +1,421 @@
+/**
+ * Business — Plan Business · Thème du desk
+ * -----------------------------------------------------------------------------
+ * Palette Graphite Chaud + Sarcelle Minérale — offre Business.
+ *   primaire  #292524 (graphite chaud)   · sidebar pierre  #F5F5F4
+ *   secondaire #0D9488 (sarcelle)       · défaut bg       #F0FDFA
+ *   destructif #DC2626               · ring focus      rgba(13,148,136,.28)
+ *
+ * Positionnement : luxe discret · warm minimalism · intemporel.
+ * Distinct de l'offre Essential (bleu #2485e5 + corail).
+ * WCAG AA : #292524 sur blanc = 14.0 : 1 ✓✓✓
+ */
+
+/* =========================================================================
+   1) Ta palette + états dérivés + surcharge des tokens Frappe
+   ========================================================================= */
+:root[data-theme="light"],
+[data-theme="light"] {
+  /* — Ta palette — */
+  --business-primary: #292524; /* graphite chaud — couleur de marque */
+  --business-primary-hover: #1C1917; /* survol */
+  --business-primary-active: #0C0A09; /* actif */
+  --business-primary-rgb: 41, 37, 36; /* ombres / halos */
+  --business-tint: #F5F5F4; /* survol listes / surfaces très claires */
+  --business-secondary: #0D9488; /* sarcelle minérale (secondaire) */
+  --business-secondary-hover: #0F766E;
+  --business-default-bg: #F0FDFA; /* teal très clair (boutons par défaut) */
+  --business-default-hover: #CCFBF1;
+  --business-danger: #DC2626; /* rouge destructif */
+  --business-danger-hover: #B91C1C;
+  --business-sidebar-bg: #F5F5F4; /* pierre chaude (sidebar) */
+  --business-ring: rgba(13, 148, 136, 0.28);
+
+  /* — Surcharge des tokens Frappe : les noirs deviennent TON bleu — */
+  /* (pas de teinte de fond : on garde le fond blanc d'origine) */
+  --btn-primary: var(--business-primary);
+  --primary: var(--business-primary);
+  --primary-color: var(--business-primary);
+  --brand-color: var(--business-primary);
+  --border-primary: var(--business-primary);
+  --checkbox-color: var(--business-primary);
+  --surface-menu-bar: var(--business-sidebar-bg);
+  --subtle-fg: #F5F5F4; /* ta valeur d'origine */
+  --sidebar-select-color: var(--business-tint);
+  --fg-hover-color: var(--business-tint);
+  --awesomplete-hover-bg: var(--business-tint);
+  --highlight-color: var(--business-tint);
+}
+
+/* =========================================================================
+   2) Composants — tes couleurs + états soignés
+   ========================================================================= */
+
+/* Transitions douces sur les éléments interactifs */
+[data-theme="light"] .btn {
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, color 0.15s ease, transform 0.06s ease;
+}
+
+/* Primaire : ton bleu, texte blanc, survol/actif soutenus, ombre de marque */
+[data-theme="light"] .btn.btn-primary,
+div#driver-popover-item .driver-popover-footer button.btn-primary,
+div#driver-popover-item .driver-popover-footer button.driver-next-btn {
+  background-color: var(--business-primary);
+  border-color: var(--business-primary);
+  color: var(--neutral);
+  white-space: nowrap;
+  --icon-stroke: currentColor;
+  --icon-fill-bg: var(--business-primary);
+}
+[data-theme="light"] .btn.btn-primary:hover {
+  background-color: var(--business-primary-hover);
+  border-color: var(--business-primary-hover);
+  box-shadow: 0 2px 10px rgba(var(--business-primary-rgb), 0.25);
+}
+[data-theme="light"] .btn.btn-primary:active {
+  background-color: var(--business-primary-active);
+  transform: translateY(1px);
+}
+
+/* Secondaire : ton corail + survol */
+[data-theme="light"] .btn.btn-secondary {
+  background-color: var(--business-secondary);
+  border-color: var(--business-secondary);
+  color: #fff;
+}
+[data-theme="light"] .btn.btn-secondary:hover {
+  background-color: var(--business-secondary-hover);
+  border-color: var(--business-secondary-hover);
+}
+
+/* Boutons par défaut de la barre d'actions : ton rose + survol */
+[data-theme="light"] .standard-items-section .btn.btn-default,
+[data-theme="light"] .standard-items-section button.btn-default {
+  background-color: var(--business-default-bg);
+}
+[data-theme="light"] .standard-items-section .btn.btn-default:hover,
+[data-theme="light"] .standard-items-section button.btn-default:hover {
+  background-color: var(--business-default-hover);
+}
+
+/* Destructif (cancel / Annuler) : ton rouge + TEXTE BLANC (contraste corrigé) */
+[data-theme="light"] .standard-items-section .btn.btn-default[data-label="cancel"],
+[data-theme="light"] .standard-items-section button.btn-default[data-label="cancel"],
+[data-theme="light"] .standard-items-section .btn.btn-default[data-label="Annuler"],
+[data-theme="light"] .standard-items-section button.btn-default[data-label="Annuler"] {
+  background-color: var(--business-danger);
+  color: #fff;
+}
+[data-theme="light"]
+  .standard-items-section
+  .btn.btn-default[data-label="cancel"]:hover,
+[data-theme="light"]
+  .standard-items-section
+  button.btn-default[data-label="cancel"]:hover,
+[data-theme="light"]
+  .standard-items-section
+  .btn.btn-default[data-label="Annuler"]:hover,
+[data-theme="light"]
+  .standard-items-section
+  button.btn-default[data-label="Annuler"]:hover {
+  background-color: var(--business-danger-hover);
+  color: #fff;
+}
+
+/* Focus clavier accessible, teinté marque (ne casse pas la souris) */
+[data-theme="light"] .btn:focus-visible,
+[data-theme="light"] .form-control:focus,
+[data-theme="light"] input:focus-visible,
+[data-theme="light"] .awesomplete > input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--business-ring);
+  border-color: var(--business-primary);
+}
+
+/* Survol des lignes de liste : teinte de marque très légère */
+[data-theme="light"] .frappe-list .list-row:hover {
+  background-color: var(--business-tint);
+}
+
+/* En-tête de page : fine séparation pour la profondeur */
+[data-theme="light"] .page-head {
+  box-shadow: inset 0 -1px 0 var(--border-color);
+}
+
+/* Ta sidebar compacte 50px, bleu clair (conservée) */
+[data-theme="light"] .body-sidebar {
+  width: 50px;
+  background: var(--surface-menu-bar);
+  border-right: 1px solid var(--sidebar-border-color);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100vh;
+  z-index: 1020;
+  padding: 8px 8px 10px 8px;
+}
+
+
+/* =========================================================================
+   Animation des icônes du desktop (cf. business/public/js/business.js)
+   - Pré-masquage anti-flash : tant que `.business-anim` est sur <html>, les
+     icônes de la grille principale sont cachées jusqu'à leur animation
+     d'entrée par GSAP. Le JS retire `.business-anim` si GSAP ne charge pas.
+   - On exclut le mode édition (`.desktop-edit-mode`) pour ne pas gêner le
+     drag-and-drop de réorganisation.
+   ========================================================================= */
+html.business-anim
+  .desktop-container
+  > .icons-container
+  > .icons
+  > .desktop-icon:not(.desktop-edit-mode) {
+  opacity: 0;
+}
+
+/* Fallback sans GSAP : animation d'entrée en CSS pur (même rendu). Le JS
+   (business.js) applique `animation: businessIconIn ...` en inline avec un délai
+   décalé par icône, puis nettoie à la fin pour libérer le survol. */
+@keyframes businessIconIn {
+  from {
+    opacity: 0;
+    transform: translateY(26px) scale(0.82) rotate(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Effet de survol : léger zoom + rotation. Transition douce, désactivé en
+   mode édition. Seulement sur les icônes de la grille principale. */
+.desktop-container > .icons-container > .icons > .desktop-icon {
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  will-change: transform;
+}
+
+.desktop-container
+  > .icons-container
+  > .icons
+  > .desktop-icon:not(.desktop-edit-mode):hover {
+  transform: scale(1.1) rotate(8deg);
+  z-index: 2;
+}
+
+/* Respect de la préférence système « réduire les animations ». */
+@media (prefers-reduced-motion: reduce) {
+  html.business-anim
+    .desktop-container
+    > .icons-container
+    > .icons
+    > .desktop-icon {
+    opacity: 1 !important;
+  }
+  .desktop-container > .icons-container > .icons > .desktop-icon {
+    transition: none;
+  }
+  .desktop-container
+    > .icons-container
+    > .icons
+    > .desktop-icon:not(.desktop-edit-mode):hover {
+    transform: none;
+  }
+}
+
+
+/* =========================================================================
+   UI/UX — micro-interactions du desk (app Business)
+   Discrètes et utiles (feedback tactile, profondeur, focus, couleur de marque).
+   Alignées sur l'accent de marque (--business-primary).
+   ========================================================================= */
+
+/* --- Icônes : profondeur au survol, libellé en couleur de marque, clic --- */
+.desktop-container > .icons-container > .icons > .desktop-icon .icon-container,
+.desktop-container > .icons-container > .icons > .desktop-icon .icon-title {
+  transition: filter 0.2s ease, color 0.2s ease, letter-spacing 0.2s ease;
+}
+
+/* Ombre portée colorée sur l'icône au survol -> effet de relief */
+.desktop-container
+  > .icons-container
+  > .icons
+  > .desktop-icon:not(.desktop-edit-mode):hover
+  .icon-container {
+  filter: drop-shadow(0 10px 18px rgba(var(--business-primary-rgb), 0.28));
+}
+
+/* Le libellé prend la couleur de marque et s'affirme au survol */
+.desktop-container
+  > .icons-container
+  > .icons
+  > .desktop-icon:not(.desktop-edit-mode):hover
+  .icon-title {
+  color: var(--business-primary);
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+/* Feedback tactile au clic : l'icône « s'enfonce » brièvement */
+.desktop-container
+  > .icons-container
+  > .icons
+  > .desktop-icon:not(.desktop-edit-mode):active {
+  transform: scale(1.02) rotate(8deg);
+  transition-duration: 0.08s;
+}
+
+/* --- Barre de navigation : entrée fluide au chargement --- */
+@keyframes businessNavIn {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.desktop-navbar {
+  animation: businessNavIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Barre de recherche : se soulève et s'éclaire au survol */
+.desktop-navbar-modal-search {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.desktop-navbar-modal-search:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(var(--business-primary-rgb), 0.18);
+}
+.desktop-search-icon svg {
+  transition: transform 0.2s ease;
+}
+.desktop-navbar-modal-search:hover .desktop-search-icon svg {
+  transform: scale(1.08);
+}
+
+/* Avatar : zoom doux + halo de marque au survol */
+.desktop-avatar {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 50%;
+}
+.desktop-avatar:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px rgba(var(--business-primary-rgb), 0.25);
+}
+
+/* Boutons du mode édition : transition douce */
+.edit-mode-buttons .btn {
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.edit-mode-buttons .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Respect de « réduire les animations » pour ces effets --- */
+@media (prefers-reduced-motion: reduce) {
+  .desktop-navbar {
+    animation: none;
+  }
+  .desktop-navbar-modal-search,
+  .desktop-avatar,
+  .desktop-search-icon svg,
+  .desktop-container > .icons-container > .icons > .desktop-icon .icon-container,
+  .desktop-container > .icons-container > .icons > .desktop-icon .icon-title {
+    transition: none;
+  }
+  .desktop-navbar-modal-search:hover,
+  .desktop-avatar:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+
+/* =========================================================================
+   UI/UX — fond animé ambiant du desk (app Business)
+   Formes géométriques très discrètes (opacité 4–10 %) qui tombent lentement,
+   en couleur de marque, DERRIÈRE les icônes. Couplé à un halo « aurora » qui
+   respire doucement -> profondeur, sans distraire. pointer-events:none =>
+   zéro impact sur les clics. Formes injectées par business.js dans
+   .desktop-wrapper.
+   ========================================================================= */
+.desktop-wrapper {
+  position: relative;
+}
+.desktop-wrapper > .desktop-navbar,
+.desktop-wrapper > .desktop-container,
+.desktop-wrapper > .edit-mode-buttons {
+  position: relative;
+  z-index: 1; /* le contenu reste au-dessus du fond animé */
+}
+
+.business-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Halo doux et mouvant -> profondeur (aurora discrète) */
+.business-bg::before {
+  content: "";
+  position: absolute;
+  inset: -25%;
+  background: radial-gradient(
+      40% 40% at 20% 30%,
+      rgba(var(--business-primary-rgb), 0.1),
+      transparent 70%
+    ),
+    radial-gradient(
+      35% 35% at 80% 70%,
+      rgba(var(--business-primary-rgb), 0.08),
+      transparent 70%
+    );
+  animation: businessBgGlow 26s ease-in-out infinite alternate;
+}
+
+.business-bg-shape {
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  background: var(--business-primary);
+  animation-name: businessBgFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+.business-bg-shape.is-round {
+  border-radius: 50%;
+}
+.business-bg-shape.is-soft {
+  filter: blur(1.5px);
+}
+
+@keyframes businessBgFall {
+  from {
+    transform: translate3d(0, -20vh, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(var(--sway, 0), 120vh, 0) rotate(var(--spin, 120deg));
+  }
+}
+@keyframes businessBgGlow {
+  from {
+    transform: translate3d(-4%, -2%, 0) scale(1);
+  }
+  to {
+    transform: translate3d(4%, 3%, 0) scale(1.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .business-bg {
+    display: none;
+  }
+}

@@ -25,11 +25,11 @@ app_license = "mit"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/business/css/business.css"
-# app_include_js = "/assets/business/js/business.js"
+app_include_css = "/assets/business/css/business_desk.css"
+app_include_js = "/assets/business/js/business.js"
 
 # include js, css files in header of web template
-# web_include_css = "/assets/business/css/business.css"
+web_include_css = "/assets/business/css/business_web.css"
 # web_include_js = "/assets/business/js/business.js"
 
 # include custom scss in every website theme (without file extension ".scss")
@@ -86,7 +86,7 @@ app_license = "mit"
 # ------------
 
 # before_install = "business.install.before_install"
-# after_install = "business.install.after_install"
+after_install = "business.install.after_install"
 
 # Uninstallation
 # ------------
@@ -109,6 +109,11 @@ app_license = "mit"
 
 # before_app_uninstall = "business.utils.before_app_uninstall"
 # after_app_uninstall = "business.utils.after_app_uninstall"
+
+# Boot
+# ----
+
+boot_session = ["business.utils.boot.extend_bootinfo"]
 
 # Desk Notifications
 # ------------------
@@ -187,6 +192,19 @@ app_license = "mit"
 # override_doctype_dashboards = {
 # 	"Task": "business.task.get_dashboard_data"
 # }
+
+# Override DocType Class
+# ------------------------------
+override_doctype_class = {
+	"Workspace Sidebar": "business.overrides.workspace_sidebar.WorkspaceSidebarFixed"
+}
+
+# Document Events (module profile protection)
+doc_events = {
+	"Module Profile": {
+		"before_delete": "business.overrides.module_profile.before_delete"
+	}
+}
 
 # exempt linked doctypes from being automatically cancelled
 #

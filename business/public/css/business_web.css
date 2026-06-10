@@ -1,0 +1,136 @@
+/**
+ * Business — Plan Business · Thème du SITE WEB (portail public)
+ * -----------------------------------------------------------------------------
+ * Palette Graphite Chaud + Sarcelle Minérale — offre Business.
+ * Pendant web de business_desk.css. Surcharge Bootstrap : boutons, liens,
+ * navbar, focus, formulaires. Sobre, accessible, premium.
+ */
+
+:root {
+  /* Accent de marque = graphite #292524 · sarcelle #0D9488 (mêmes valeurs que le desk) */
+  --business-primary: #292524;
+  --business-primary-hover: #1C1917;
+  --business-primary-active: #0C0A09;
+  --business-primary-rgb: 41, 37, 36;
+  --business-tint: #F5F5F4;
+  --business-ring: rgba(13, 148, 136, 0.28);
+
+  /* Tokens Frappe éventuellement utilisés ailleurs sur le web */
+  /* (pas de teinte de fond : on garde le fond blanc d'origine) */
+  --primary: #292524;
+  --primary-color: #292524;
+  --brand-color: #292524;
+}
+
+/* =========================================================================
+   Boutons
+   ========================================================================= */
+.btn {
+  transition: background-color 0.15s ease, border-color 0.15s ease,
+    box-shadow 0.15s ease, color 0.15s ease, transform 0.06s ease;
+}
+
+/* Primaire : bleu de marque, texte blanc, états soignés */
+.btn-primary,
+.page-builder .btn-primary,
+.web-footer .btn-primary {
+  background-color: var(--business-primary);
+  border-color: var(--business-primary);
+  color: #fff;
+}
+.btn-primary:hover {
+  background-color: var(--business-primary-hover);
+  border-color: var(--business-primary-hover);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(var(--business-primary-rgb), 0.25);
+}
+.btn-primary:not(:disabled):not(.disabled):active,
+.btn-primary:active {
+  background-color: var(--business-primary-active);
+  border-color: var(--business-primary-active);
+  color: #fff;
+  transform: translateY(1px);
+}
+
+/* Variante claire (page builder) : fond teinté, texte de marque */
+.btn-primary-light {
+  background-color: var(--business-tint);
+  border-color: var(--business-tint);
+  color: var(--business-primary-hover);
+}
+.btn-primary-light:hover {
+  background-color: var(--blue-100, #edf6fd);
+  color: var(--business-primary-active);
+}
+
+/* Bouton « outline » primaire */
+.btn-outline-primary {
+  color: var(--business-primary);
+  border-color: var(--business-primary);
+}
+.btn-outline-primary:hover,
+.btn-outline-primary:active {
+  background-color: var(--business-primary);
+  border-color: var(--business-primary);
+  color: #fff;
+}
+
+/* =========================================================================
+   Liens
+   ========================================================================= */
+a:not(.nav-link):not(.btn):not(.navbar-brand):not(.dropdown-item) {
+  color: var(--business-primary);
+}
+a:not(.nav-link):not(.btn):not(.navbar-brand):not(.dropdown-item):hover {
+  color: var(--business-primary-hover);
+}
+
+/* =========================================================================
+   Navbar : survol / lien actif en couleur de marque
+   ========================================================================= */
+.navbar .nav-link:hover,
+.navbar .nav-link:focus,
+.navbar .nav-link.active,
+.navbar-brand:hover {
+  color: var(--business-primary) !important;
+}
+
+/* Footer : survol des liens en couleur de marque */
+.web-footer .footer-link:hover,
+.web-footer a:hover {
+  color: var(--business-primary);
+}
+
+/* =========================================================================
+   Focus accessible + champs de formulaire
+   ========================================================================= */
+.btn:focus,
+.btn:focus-visible,
+.form-control:focus,
+.form-control:focus-visible,
+.web-form-container .input-with-feedback:focus,
+input:focus-visible,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--business-primary);
+  box-shadow: 0 0 0 0.2rem var(--business-ring);
+}
+
+/* =========================================================================
+   Détails
+   ========================================================================= */
+/* Sélection de texte teintée marque */
+::selection {
+  background: rgba(var(--business-primary-rgb), 0.18);
+}
+
+/* Filets / éléments actifs courants du page builder */
+.page_content .navbar .nav-link.active,
+.page-builder .text-primary,
+.text-primary {
+  color: var(--business-primary) !important;
+}
+.bg-primary {
+  background-color: var(--business-primary) !important;
+}
