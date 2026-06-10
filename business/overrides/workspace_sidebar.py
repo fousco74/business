@@ -5,17 +5,14 @@ from frappe.desk.doctype.workspace_sidebar.workspace_sidebar import WorkspaceSid
 class WorkspaceSidebarFixed(WorkspaceSidebar):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, **kwargs)
-		if self.allowed_modules and not self.user.allow_modules:
-			self.user.allow_modules = self.allowed_modules
-		if self.can_read and not self.user.can_read:
-			self.user.can_read = self.can_read
-		# Debug temporaire
-		frappe.logger().info(
-			f"[business] WorkspaceSidebarFixed: module={getattr(self,'module',None)} "
-			f"allowed_modules={self.allowed_modules[:3] if self.allowed_modules else self.allowed_modules!r} "
-			f"user.allow_modules={self.user.allow_modules[:3] if self.user.allow_modules else '[]'} "
-			f"user={frappe.session.user}"
-		)
+		allowed_modules = getattr(self, "allowed_modules", None)
+		can_read = getattr(self, "can_read", None)
+		user = getattr(self, "user", None)
+		if user:
+			if allowed_modules and not user.allow_modules:
+				user.allow_modules = allowed_modules
+			if can_read and not user.can_read:
+				user.can_read = can_read
 
 	def get_can_read_items(self):
 		if not self.user.can_read:
