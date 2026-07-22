@@ -92,7 +92,7 @@ div#driver-popover-item .driver-popover-footer button.driver-next-btn {
 /* Boutons par défaut de la barre d'actions : ton rose + survol */
 [data-theme="light"] .standard-items-section .btn.btn-default,
 [data-theme="light"] .standard-items-section button.btn-default {
-  background-color: var(--business-default-bg);
+  background-color: var( --business-secondary);
 }
 [data-theme="light"] .standard-items-section .btn.btn-default:hover,
 [data-theme="light"] .standard-items-section button.btn-default:hover {
